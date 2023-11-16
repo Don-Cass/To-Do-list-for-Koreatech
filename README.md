@@ -6,4 +6,3 @@
 2. pip install selenium
 3. pip install beautifulsoup4
 4. 여기있는 크롬 드라이버 버전: 119.xxx << 이 버전이 오래 됐으면 https://googlechromelabs.github.io/chrome-for-testing/ 여기서 업데이트
-5. 
