@@ -3,18 +3,35 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time          
+from selenium.webdriver.support import expected_conditions as EC 
+from bs4 import BeautifulSoup
+import csv
+import time
 
-print("=" *100)
+# 남은 기한에 따라 과제를 정렬하는 함수
+def sort_tasks_by_remaining_days(tasks):
+    def get_remaining_days(task):
+        return float(task[-1].replace("일", "")) if task[-1] != "-" else float('inf')
+    return sorted(tasks, key=get_remaining_days)
+
+# 각 리스트를 CSV 파일로 저장하는 함수
+def save_to_csv(file_name, tasks):
+    with open(file_name, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(['과제 종류', '과목명', '과제명', '일정', '남은 기한'])
+        for task in tasks:
+            writer.writerow(task)
+
+# Selenium을 사용하여 웹 페이지에서 데이터 추출
+print("=" * 100)
 print("To Do List for Koreatech ver 0.0")
-print("=" *100)
+print("=" * 100)
 id_txt = input('ID: ')
 print("\n")
 pw_txt = input('PASSWORD: ')
 print("\n")
 
-s = Service("c:/py_temp/chromedriver.exe")
+s = Service("c:/To-Do-list-for-Koreatech/chromedriver.exe")
 driver = webdriver.Chrome(service=s)
 
 url = 'https://el2.koreatech.ac.kr/login/guestlogin.php?ssologin=1'
@@ -33,16 +50,10 @@ WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@
 driver.find_element(By.XPATH, '//*[@id="region-main"]/ul/li[2]/a').click( )
 time.sleep(5)
 
-import csv
-from bs4 import BeautifulSoup
-
-# 현재 페이지의 HTML 소스 가져오기
+# BeautifulSoup를 사용하여 HTML 파싱 및 데이터 추출
 html = driver.page_source
-
-# BeautifulSoup 객체 생성
 soup = BeautifulSoup(html, 'html.parser')
 
-# 할 일을 저장할 리스트
 tasks_0_7 = []  # 기한이 0~7일인 과제
 tasks_8_14 = [] # 기한이 8~14일인 과제
 
@@ -77,16 +88,7 @@ for div in soup.find_all('div', class_='activity-card'):
         tasks_0_7.append(task_info)
     elif 8 <= days_remaining <= 14:
         tasks_8_14.append(task_info)
-        
-        
 
-# 남은 기한에 따라 과제를 정렬하는 함수
-def sort_tasks_by_remaining_days(tasks):
-    # 남은 기한이 'inf'인 경우를 처리하기 위해 별도의 함수 정의
-    def get_remaining_days(task):
-        return float(task[-1].replace("일", "")) if task[-1] != "-" else float('inf')
-    
-    return sorted(tasks, key=get_remaining_days)
 
 # 과제 목록을 남은 기한에 따라 정렬
 tasks_0_7_sorted = sort_tasks_by_remaining_days(tasks_0_7)
@@ -96,9 +98,9 @@ tasks_8_14_sorted = sort_tasks_by_remaining_days(tasks_8_14)
 save_to_csv('tasks_0_7_sorted.csv', tasks_0_7_sorted)
 save_to_csv('tasks_8_14_sorted.csv', tasks_8_14_sorted)
 
-print("정렬된 과제 목록이 tasks_0_7_sorted.csv와 tasks_8_14_sorted.csv 파일로 저장되었습니다.")
+print("과제 목록이 정렬되어 tasks_0_7_sorted.csv와 tasks_8_14_sorted.csv 파일로 저장되었습니다.")
 
-
-
+# WebDriver 종료
+driver.quit()
 
 
